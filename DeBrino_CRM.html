@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeBrino Caulking — Bid CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f7f6f2;--surface:#ffffff;--surface2:#f0efe9;--border:#e2e0d8;
+    --text:#1a1917;--text2:#6b6860;--text3:#a8a69f;
+    --accent:#1a3a2a;--accent-light:#e8f0eb;--accent-mid:#4a7c5e;
+    --amber:#92600a;--amber-bg:#fef3e2;
+    --red:#8b2020;--red-bg:#fdeaea;
+    --blue:#1a3a6b;--blue-bg:#e8eef8;
+    --green:#1a4a2a;--green-bg:#e8f4ec;
+    --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+    --radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04);
+  }
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+  .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+
+  /* Sidebar */
+  .sidebar{background:var(--accent);padding:28px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .logo{padding:0 20px 28px;border-bottom:1px solid rgba(255,255,255,0.1)}
+  .logo-name{font-size:15px;font-weight:600;color:#fff;letter-spacing:-0.3px;line-height:1.3}
+  .logo-sub{font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;letter-spacing:0.5px;text-transform:uppercase}
+  .nav{padding:20px 12px;flex:1}
+  .nav-label{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:16px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.6);font-size:13px;font-weight:500;transition:all 0.15s;margin-bottom:2px}
+  .nav-item:hover{background:rgba(255,255,255,0.08);color:#fff}
+  .nav-item.active{background:rgba(255,255,255,0.15);color:#fff}
+  .nav-icon{width:16px;height:16px;opacity:0.8;flex-shrink:0}
+  .nav-badge{margin-left:auto;background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;font-family:var(--mono)}
+  .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.3)}
+
+  /* Main */
+  .main{padding:32px 36px;overflow-y:auto}
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+  .page-title{font-size:22px;font-weight:600;letter-spacing:-0.5px}
+  .page-sub{font-size:13px;color:var(--text2);margin-top:3px}
+  .btn-row{display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all 0.15s}
+  .btn:hover{background:var(--surface2);border-color:#ccc}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:#122a1e;border-color:#122a1e}
+  .btn-sm{padding:5px 12px;font-size:12px}
+  .btn-danger{color:var(--red);border-color:transparent;background:transparent}
+  .btn-danger:hover{background:var(--red-bg);border-color:#f5c0c0}
+
+  /* Metrics */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+  .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow)}
+  .metric-label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px}
+  .metric-value{font-size:28px;font-weight:600;letter-spacing:-1px;line-height:1}
+  .metric-sub{font-size:11px;color:var(--text3);margin-top:5px}
+  .metric-accent{border-left:3px solid var(--accent-mid)}
+
+  /* Table */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden}
+  .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .card-title{font-size:14px;font-weight:600}
+  .toolbar{display:flex;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap}
+  .search-wrap{position:relative;flex:1;min-width:180px}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text3)}
+  .toolbar input[type=text]{width:100%;padding:7px 10px 7px 32px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:var(--font);background:var(--surface);color:var(--text);outline:none}
+  .toolbar input[type=text]:focus{border-color:#aaa}
+  .toolbar select{padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:var(--font);background:var(--surface);color:var(--text);outline:none;cursor:pointer}
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;padding:10px 16px;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#fafaf8}
+  .job-name{font-weight:600;font-size:13px;color:var(--text)}
+  .job-addr{font-size:11px;color:var(--text3);margin-top:1px}
+  .gc-name{font-size:13px}
+  .gc-contact{font-size:11px;color:var(--text3)}
+
+  /* Badges */
+  .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:0.2px}
+  .badge-won{background:var(--green-bg);color:var(--green)}
+  .badge-lost{background:var(--red-bg);color:var(--red)}
+  .badge-pending{background:var(--amber-bg);color:var(--amber)}
+  .badge-invited{background:var(--blue-bg);color:var(--blue)}
+  .sec-tag{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+
+  /* Date colors */
+  .overdue{color:var(--red);font-weight:600}
+  .due-soon{color:var(--amber);font-weight:600}
+
+  /* Modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(10,8,6,0.45);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);padding:28px;width:560px;max-width:94vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.15)}
+  .modal-title{font-size:16px;font-weight:600;margin-bottom:20px;letter-spacing:-0.3px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fg{display:flex;flex-direction:column;gap:5px}
+  .fg.full{grid-column:1/-1}
+  .fg label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
+  .fg input,.fg select,.fg textarea{padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);background:var(--surface);color:var(--text);outline:none;transition:border 0.15s}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#999}
+  .fg textarea{resize:vertical;min-height:80px}
+  .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+
+  /* Contacts */
+  .contacts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  .contact-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow)}
+  .avatar{width:42px;height:42px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0;border:2px solid rgba(74,124,94,0.15)}
+  .contact-name{font-size:14px;font-weight:600}
+  .contact-role{font-size:12px;color:var(--text2)}
+  .contact-detail{font-size:12px;color:var(--text2);margin-top:4px;display:flex;align-items:center;gap:5px}
+
+  /* Dashboard panels */
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow)}
+  .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+  .panel-body{padding:14px 18px}
+  .due-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+  .due-item:last-child{border-bottom:none}
+  .due-job{font-size:13px;font-weight:500}
+  .due-meta{font-size:11px;color:var(--text3);margin-top:1px}
+  .wr-row{margin-bottom:12px}
+  .wr-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px}
+  .wr-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+  .wr-fill{height:100%;background:var(--accent-mid);border-radius:3px}
+
+  /* Reminders */
+  .reminder-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+  .reminder-item:last-child{border-bottom:none}
+  .rem-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .dot-green{background:var(--accent-mid)}
+  .dot-amber{background:#d4870a}
+  .dot-red{background:#c0392b}
+  .rem-title{font-size:13px;font-weight:500}
+  .rem-sub{font-size:11px;color:var(--text3);margin-top:1px}
+  .rem-when{font-size:11px;font-weight:600;white-space:nowrap}
+
+  .hidden{display:none!important}
+  .empty-state{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px}
+  .empty-icon{font-size:32px;margin-bottom:8px;opacity:0.4}
+
+  /* Page sections */
+  .page{display:none}
+  .page.active{display:block}
+
+  /* Money */
+  .money{font-family:var(--mono);font-size:13px}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-name">DeBrino Caulking</div>
+    <div class="logo-sub">Associates, Inc.</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" onclick="goTo('dashboard',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="goTo('bids',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12M2 6h8M2 9h10M2 12h6"/></svg>
+      Bids
+      <span class="nav-badge" id="nav-bids-count">0</span>
+    </div>
+    <div class="nav-item" onclick="goTo('contacts',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+      Contacts
+      <span class="nav-badge" id="nav-contacts-count">0</span>
+    </div>
+    <div class="nav-item" onclick="goTo('reminders',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+      Reminders
+      <span class="nav-badge" id="nav-rem-count" style="background:#c0392b">0</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">DeBrino CRM v1.0</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div><div class="page-title">Dashboard</div><div class="page-sub">Overview of your bid pipeline</div></div>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-sm" onclick="openBidModal()">+ New bid</button>
+        <button class="btn btn-sm" onclick="openContactModal()">+ Contact</button>
+      </div>
+    </div>
+    <div class="metrics" id="metrics"></div>
+    <div class="dash-grid">
+      <div class="panel">
+        <div class="panel-header">Due soon (next 7 days)</div>
+        <div class="panel-body" id="due-soon"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Win rate by section</div>
+        <div class="panel-body" id="wr-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIDS -->
+  <div class="page" id="page-bids">
+    <div class="page-header">
+      <div><div class="page-title">Bids</div><div class="page-sub">All bids by section/scope</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openBidModal()">+ New bid</button>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4"/><path d="M10 10l3 3"/></svg>
+          <input type="text" id="bid-search" placeholder="Search job, GC, contact..." oninput="renderBids()">
+        </div>
+        <select id="bid-filter-status" onchange="renderBids()">
+          <option value="">All statuses</option>
+          <option>Invited</option><option>Pending</option><option>Won</option><option>Lost</option>
+        </select>
+        <select id="bid-filter-section" onchange="renderBids()">
+          <option value="">All sections</option>
+          <option>071100</option><option>071300</option><option>071610</option><option>072700</option><option>079200</option>
+        </select>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Job</th><th>GC / Contact</th><th>Section</th><th>Bid amount</th><th>Due date</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="bids-tbody"></tbody>
+      </table>
+      <div id="bids-empty" class="empty-state hidden"><div class="empty-icon">📋</div>No bids match your filters.</div>
+    </div>
+  </div>
+
+  <!-- CONTACTS -->
+  <div class="page" id="page-contacts">
+    <div class="page-header">
+      <div><div class="page-title">Contacts</div><div class="page-sub">GCs, project managers & estimators</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openContactModal()">+ Contact</button>
+    </div>
+    <div class="toolbar" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;border-bottom:1px solid var(--border)">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4"/><path d="M10 10l3 3"/></svg>
+        <input type="text" id="contact-search" placeholder="Search contacts..." oninput="renderContacts()">
+      </div>
+    </div>
+    <div class="contacts-grid" id="contacts-grid"></div>
+    <div id="contacts-empty" class="empty-state hidden"><div class="empty-icon">👤</div>No contacts yet. Add your first GC or PM.</div>
+  </div>
+
+  <!-- REMINDERS -->
+  <div class="page" id="page-reminders">
+    <div class="page-header">
+      <div><div class="page-title">Reminders</div><div class="page-sub">Upcoming follow-ups and bid deadlines</div></div>
+    </div>
+    <div class="card">
+      <div class="panel-body" id="reminders-list" style="padding:0 18px"></div>
+      <div id="reminders-empty" class="empty-state hidden"><div class="empty-icon">✓</div>You're all caught up. No upcoming reminders.</div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- BID MODAL -->
+<div class="modal-bg" id="modal-bid">
+  <div class="modal">
+    <div class="modal-title" id="bid-modal-title">New bid</div>
+    <div class="form-grid">
+      <div class="fg full"><label>Job name</label><input id="f-job" placeholder="e.g. Albany Medical Tower"></div>
+      <div class="fg full"><label>Job address</label><input id="f-addr" placeholder="123 Main St, Albany NY"></div>
+      <div class="fg"><label>GC / Company</label><input id="f-gc" placeholder="General contractor"></div>
+      <div class="fg"><label>Contact name</label><input id="f-contact" placeholder="Project manager name"></div>
+      <div class="fg"><label>Section</label>
+        <select id="f-section">
+          <option>071100 – Bituminous Dampproofing</option>
+          <option>071300 – Sheet Waterproofing</option>
+          <option>071610 – Crystalline Waterproofing</option>
+          <option>072700 – Air Barriers</option>
+          <option>079200 – Joint Sealants</option>
+        </select>
+      </div>
+      <div class="fg"><label>Status</label>
+        <select id="f-status"><option>Invited</option><option>Pending</option><option>Won</option><option>Lost</option></select>
+      </div>
+      <div class="fg"><label>Bid amount ($)</label><input id="f-amount" type="number" placeholder="0"></div>
+      <div class="fg"><label>Awarded amount ($)</label><input id="f-awarded" type="number" placeholder="0 if not won"></div>
+      <div class="fg"><label>Bid due date</label><input id="f-due" type="date"></div>
+      <div class="fg"><label>Follow-up date</label><input id="f-followup" type="date"></div>
+      <div class="fg full"><label>Notes</label><textarea id="f-notes" placeholder="Scope gaps, clarifications, exclusions, assumptions..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('bid')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBid()">Save bid</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="modal-bg" id="modal-contact">
+  <div class="modal">
+    <div class="modal-title">New contact</div>
+    <div class="form-grid">
+      <div class="fg"><label>First name</label><input id="c-first" placeholder="First"></div>
+      <div class="fg"><label>Last name</label><input id="c-last" placeholder="Last"></div>
+      <div class="fg full"><label>Company / GC</label><input id="c-company" placeholder="Company name"></div>
+      <div class="fg"><label>Phone</label><input id="c-phone" placeholder="(518) 555-0100"></div>
+      <div class="fg"><label>Email</label><input id="c-email" placeholder="name@company.com"></div>
+      <div class="fg full"><label>Role</label><input id="c-role" placeholder="Project Manager, Estimator..."></div>
+      <div class="fg full"><label>Notes</label><textarea id="c-notes" placeholder="Any notes about this contact..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('contact')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveContact()">Save contact</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SECTIONS=['071100','071300','071610','072700','079200'];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// Persist to localStorage
+function load(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch(e){return def;}}
+function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+
+let bids=load('dc_bids',[
+  {id:1,job:'Albany Medical Tower',addr:'100 New Scotland Ave, Albany NY',gc:'Turner Construction',contact:'Mike Farrell',section:'071300 – Sheet Waterproofing',amount:18500,due:'2026-03-20',status:'Pending',awarded:0,followup:'2026-03-18',notes:'Confirm elevator pit scope with GC'},
+  {id:2,job:'SUNY Admin Building',addr:'1400 Washington Ave, Albany NY',gc:'LeChase Construction',contact:'Sarah Pope',section:'072700 – Air Barriers',amount:24000,due:'2026-03-15',status:'Invited',awarded:0,followup:'2026-03-14',notes:''},
+  {id:3,job:'Capital District Transit',addr:'85 Watervliet Ave, Albany NY',gc:'BBL Construction',contact:'Dan Hughes',section:'071100 – Bituminous Dampproofing',amount:9200,due:'2026-02-28',status:'Won',awarded:9200,followup:'',notes:'Signed 3/1'},
+  {id:4,job:'Crossgates Expansion',addr:'1 Crossgates Mall Rd, Albany NY',gc:'CHA Consulting',contact:'Lisa Moran',section:'079200 – Joint Sealants',amount:6400,due:'2026-02-20',status:'Lost',awarded:0,followup:'',notes:'Lost to lower bidder'},
+]);
+let contacts=load('dc_contacts',[
+  {id:1,first:'Mike',last:'Farrell',company:'Turner Construction',phone:'(518) 555-0110',email:'m.farrell@turner.com',role:'Project Manager',notes:''},
+  {id:2,first:'Sarah',last:'Pope',company:'LeChase Construction',phone:'(518) 555-0192',email:'s.pope@lechase.com',role:'Estimator',notes:''},
+  {id:3,first:'Dan',last:'Hughes',company:'BBL Construction',phone:'(518) 555-0134',email:'d.hughes@bbl.com',role:'Superintendent',notes:''},
+]);
+let nextBidId=load('dc_nbid',20);
+let nextContactId=load('dc_ncid',20);
+let editingBidId=null;
+
+function persist(){
+  save('dc_bids',bids);save('dc_contacts',contacts);
+  save('dc_nbid',nextBidId);save('dc_ncid',nextContactId);
+  updateNavBadges();
+}
+
+function dateDiff(s){
+  if(!s)return null;
+  const now=new Date();now.setHours(0,0,0,0);
+  const d=new Date(s+'T00:00:00');
+  return Math.round((d-now)/(86400000));
+}
+function fmtDate(s){
+  if(!s)return '—';
+  const[y,m,d]=s.split('-');
+  return MONTHS[parseInt(m)-1]+' '+parseInt(d);
+}
+function fmtMoney(n){return'$'+Math.round(n).toLocaleString();}
+function statusBadge(s){
+  const m={Won:'badge-won',Lost:'badge-lost',Pending:'badge-pending',Invited:'badge-invited'};
+  return`<span class="badge ${m[s]||'badge-pending'}">${s}</span>`;
+}
+
+function goTo(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  el.classList.add('active');
+  if(page==='dashboard')renderDashboard();
+  if(page==='bids')renderBids();
+  if(page==='contacts')renderContacts();
+  if(page==='reminders')renderReminders();
+}
+
+function updateNavBadges(){
+  document.getElementById('nav-bids-count').textContent=bids.length;
+  document.getElementById('nav-contacts-count').textContent=contacts.length;
+  const remCount=getReminderItems().length;
+  const badge=document.getElementById('nav-rem-count');
+  badge.textContent=remCount;
+  badge.style.display=remCount>0?'':'none';
+}
+
+function openBidModal(bidId){
+  editingBidId=bidId||null;
+  document.getElementById('bid-modal-title').textContent=bidId?'Edit bid':'New bid';
+  if(bidId){
+    const b=bids.find(x=>x.id===bidId);
+    document.getElementById('f-job').value=b.job;
+    document.getElementById('f-addr').value=b.addr;
+    document.getElementById('f-gc').value=b.gc;
+    document.getElementById('f-contact').value=b.contact;
+    document.getElementById('f-section').value=b.section;
+    document.getElementById('f-amount').value=b.amount;
+    document.getElementById('f-due').value=b.due;
+    document.getElementById('f-status').value=b.status;
+    document.getElementById('f-awarded').value=b.awarded||'';
+    document.getElementById('f-followup').value=b.followup;
+    document.getElementById('f-notes').value=b.notes;
+  } else {
+    ['f-job','f-addr','f-gc','f-contact','f-amount','f-due','f-awarded','f-followup','f-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-status').value='Invited';
+  }
+  document.getElementById('modal-bid').classList.add('open');
+}
+
+function openContactModal(){
+  ['c-first','c-last','c-company','c-phone','c-email','c-role','c-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-contact').classList.add('open');
+}
+
+function closeModal(type){document.getElementById('modal-'+type).classList.remove('open');}
+
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+function saveBid(){
+  const b={
+    id:editingBidId||nextBidId++,
+    job:document.getElementById('f-job').value||'Untitled',
+    addr:document.getElementById('f-addr').value,
+    gc:document.getElementById('f-gc').value,
+    contact:document.getElementById('f-contact').value,
+    section:document.getElementById('f-section').value,
+    amount:parseFloat(document.getElementById('f-amount').value)||0,
+    due:document.getElementById('f-due').value,
+    status:document.getElementById('f-status').value,
+    awarded:parseFloat(document.getElementById('f-awarded').value)||0,
+    followup:document.getElementById('f-followup').value,
+    notes:document.getElementById('f-notes').value,
+  };
+  if(editingBidId){const idx=bids.findIndex(x=>x.id===editingBidId);bids[idx]=b;}
+  else bids.push(b);
+  persist();closeModal('bid');renderBids();renderDashboard();renderReminders();
+}
+
+function saveContact(){
+  contacts.push({
+    id:nextContactId++,
+    first:document.getElementById('c-first').value,
+    last:document.getElementById('c-last').value,
+    company:document.getElementById('c-company').value,
+    phone:document.getElementById('c-phone').value,
+    email:document.getElementById('c-email').value,
+    role:document.getElementById('c-role').value,
+    notes:document.getElementById('c-notes').value,
+  });
+  persist();closeModal('contact');renderContacts();
+}
+
+function deleteBid(id){
+  if(!confirm('Delete this bid?'))return;
+  bids=bids.filter(b=>b.id!==id);
+  persist();renderBids();renderDashboard();renderReminders();
+}
+
+function renderDashboard(){
+  const won=bids.filter(b=>b.status==='Won');
+  const active=bids.filter(b=>b.status==='Pending'||b.status==='Invited');
+  const revenue=won.reduce((s,b)=>s+b.awarded,0);
+  const wr=bids.length>0?Math.round(won.length/bids.length*100):0;
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric-card metric-accent"><div class="metric-label">Total bids</div><div class="metric-value">${bids.length}</div><div class="metric-sub">all sections</div></div>
+    <div class="metric-card metric-accent"><div class="metric-label">Active / invited</div><div class="metric-value">${active.length}</div><div class="metric-sub">need attention</div></div>
+    <div class="metric-card metric-accent"><div class="metric-label">Win rate</div><div class="metric-value">${wr}%</div><div class="metric-sub">${won.length} won of ${bids.length}</div></div>
+    <div class="metric-card metric-accent"><div class="metric-label">Awarded revenue</div><div class="metric-value" style="font-size:22px">${fmtMoney(revenue)}</div><div class="metric-sub">confirmed</div></div>
+  `;
+  const dueSoon=bids.filter(b=>b.status!=='Won'&&b.status!=='Lost'&&b.due).map(b=>({...b,diff:dateDiff(b.due)})).filter(b=>b.diff!==null&&b.diff<=7).sort((a,b)=>a.diff-b.diff);
+  const ds=document.getElementById('due-soon');
+  ds.innerHTML=dueSoon.length===0?'<p style="font-size:13px;color:#a8a69f;padding:8px 0">No bids due in the next 7 days.</p>':
+    dueSoon.map(b=>{
+      const cls=b.diff<0?'overdue':b.diff<=2?'due-soon':'';
+      const label=b.diff<0?`${Math.abs(b.diff)}d overdue`:b.diff===0?'Due today':`In ${b.diff}d`;
+      return`<div class="due-item"><div><div class="due-job">${b.job}</div><div class="due-meta">${b.section.split('–')[0].trim()} · ${b.gc}</div></div><span class="${cls}" style="font-size:12px">${label}</span></div>`;
+    }).join('');
+  document.getElementById('wr-chart').innerHTML=SECTIONS.map(sec=>{
+    const sb=bids.filter(b=>b.section.startsWith(sec));
+    const sw=sb.filter(b=>b.status==='Won').length;
+    const pct=sb.length>0?Math.round(sw/sb.length*100):0;
+    return`<div class="wr-row"><div class="wr-labels"><span>${sec}</span><span>${pct}% (${sw}/${sb.length})</span></div><div class="wr-track"><div class="wr-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function renderBids(){
+  const q=(document.getElementById('bid-search').value||'').toLowerCase();
+  const fs=document.getElementById('bid-filter-status').value;
+  const fsc=document.getElementById('bid-filter-section').value;
+  const filtered=bids.filter(b=>{
+    const mq=!q||[b.job,b.gc,b.contact,b.addr].join(' ').toLowerCase().includes(q);
+    const ms=!fs||b.status===fs;
+    const msc=!fsc||b.section.startsWith(fsc);
+    return mq&&ms&&msc;
+  });
+  const tbody=document.getElementById('bids-tbody');
+  const empty=document.getElementById('bids-empty');
+  if(!filtered.length){tbody.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  tbody.innerHTML=filtered.map(b=>{
+    const diff=dateDiff(b.due);
+    const dcls=diff!==null&&diff<0?'overdue':diff!==null&&diff<=2?'due-soon':'';
+    const dlabel=b.due?`<span class="${dcls}">${fmtDate(b.due)}</span>`:'—';
+    return`<tr>
+      <td><div class="job-name">${b.job}</div><div class="job-addr">${b.addr||''}</div></td>
+      <td><div class="gc-name">${b.gc||'—'}</div><div class="gc-contact">${b.contact||''}</div></td>
+      <td><span class="sec-tag">${b.section.split('–')[0].trim()}</span></td>
+      <td class="money">${fmtMoney(b.amount)}</td>
+      <td>${dlabel}</td>
+      <td>${statusBadge(b.status)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" onclick="openBidModal(${b.id})" style="margin-right:4px">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteBid(${b.id})">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderContacts(){
+  const q=(document.getElementById('contact-search').value||'').toLowerCase();
+  const filtered=contacts.filter(c=>!q||(c.first+' '+c.last+' '+c.company).toLowerCase().includes(q));
+  const grid=document.getElementById('contacts-grid');
+  const empty=document.getElementById('contacts-empty');
+  if(!filtered.length){grid.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  grid.innerHTML=filtered.map(c=>{
+    const initials=((c.first||'')[0]||'')+((c.last||'')[0]||'');
+    const bc=bids.filter(b=>b.contact===c.first+' '+c.last||b.gc===c.company).length;
+    return`<div class="contact-card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div class="avatar">${initials.toUpperCase()}</div>
+        <div><div class="contact-name">${c.first} ${c.last}</div><div class="contact-role">${c.role||''}</div></div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:#1a3a2a;margin-bottom:6px">${c.company||''}</div>
+      ${c.phone?`<div class="contact-detail">${c.phone}</div>`:''}
+      ${c.email?`<div class="contact-detail" style="color:#1a3a6b">${c.email}</div>`:''}
+      <div style="margin-top:8px;font-size:11px;color:#a8a69f">${bc} bid${bc!==1?'s':''} linked</div>
+    </div>`;
+  }).join('');
+}
+
+function getReminderItems(){
+  const items=[];
+  bids.forEach(b=>{
+    if(b.followup){const diff=dateDiff(b.followup);if(diff!==null&&diff<=7)items.push({type:'followup',diff,label:'Follow up: '+b.job,sub:b.gc+' · '+fmtDate(b.followup),cls:'dot-green'});}
+    if(b.due&&(b.status==='Pending'||b.status==='Invited')){const diff=dateDiff(b.due);if(diff!==null&&diff<=5)items.push({type:'due',diff,label:'Bid due: '+b.job,sub:b.section.split('–')[0].trim()+' · '+fmtDate(b.due),cls:diff<0?'dot-red':'dot-amber'});}
+  });
+  return items.sort((a,b)=>a.diff-b.diff);
+}
+
+function renderReminders(){
+  const items=getReminderItems();
+  const list=document.getElementById('reminders-list');
+  const empty=document.getElementById('reminders-empty');
+  if(!items.length){list.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  list.innerHTML=items.map(item=>{
+    const tl=item.diff<0?`${Math.abs(item.diff)}d overdue`:item.diff===0?'Today':`In ${item.diff}d`;
+    const tc=item.diff<0?'color:#8b2020':item.diff===0?'color:#92600a':'color:#1a3a2a';
+    return`<div class="reminder-item">
+      <div class="rem-dot ${item.cls}"></div>
+      <div style="flex:1"><div class="rem-title">${item.label}</div><div class="rem-sub">${item.sub}</div></div>
+      <span class="rem-when" style="${tc}">${tl}</span>
+    </div>`;
+  }).join('');
+}
+
+// Init
+renderDashboard();renderBids();renderContacts();renderReminders();updateNavBadges();
+</script>
+</body>
+</html>
